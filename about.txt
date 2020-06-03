@@ -1,0 +1,30 @@
+
+
+
+Your Character:
+- 3 class options (warrior, wizard, archer)
+- 3 subclass options (pirate, robot, alien)
+- 3 elemental options (fire, water, darkness)
+
+
+*Defense indicates amount of damage. For instance, say you are -3 defense vs. magic. If
+a magic attack hits you for 5 damage, then you lose 5 health, plus an additional 3, 
+totaling damage.
+warrior = +3 strength vs. range based enemies
+	  -3 defense vs. magic based attacks
+
+wizard = +5 strength vs. melee based enemies
+	 -2 defense vs. melee attacks
+	 -5 defense vs. range
+	 
+
+archer = cannot be poisoned
+	+ 2 strength vs. magic
+
+====== Subtype ======
+- 
+
+
+===== Element ======
+- water, fire, darkness
+
