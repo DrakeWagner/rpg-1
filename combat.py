@@ -5,7 +5,7 @@ def Player_Attack(player, enemy):
     enemy.hp -= damage
     print('You attack the {} for {} damage.'.format(enemy.name, damage))
 
-def Enemy_Attack(player, enemy):
+def enemy_attack(player, enemy):
     damage = enemy.strength + randint(-2, 2)
     player.hp -= damage
     print('The {} hit you for {} damage!'.format(enemy.name, damage))
