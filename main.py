@@ -1,5 +1,4 @@
 import sys
-import os
 from random import randint
 
 for i in range(0, 5):
@@ -62,11 +61,10 @@ class Player_Class:
 
 
 def start():
-    os.system('cls')
-    p1 = Player_Class()
-    p1.pick_class()
-    print(p1)
-    menu(p1)
+    player = Player_Class()
+    player.pick_class()
+    print(player)
+    menu(player)
 
 
 # Main loop of the game
@@ -84,6 +82,7 @@ def menu(p1):
     option = int(input('>> '))
     if option == 1:
         enemy_decider()
+        fight()
     elif option == 2:
         store()
     elif option == 3:
@@ -92,52 +91,92 @@ def menu(p1):
         main_menu()
 
 
-# Enemies
-class Skeleton:
-    def __init__(self, name):
-        self.name = name
-        self.maxhp = 15
-        self.hp = self.maxhp
-        self.attack = 3
-        self.agility = 3
-
-
-test_skeleton = Skeleton('test_skeleton')
-
-
+# Classes
 class Zombie:
     def __init__(self, name):
         self.name = name
         self.maxhp = 20
         self.hp = self.maxhp
-        self.attack = 5
+        self.strength = 5
         self.agility = 1
 
 
 test_zombie = Zombie('test_zombie')
+print(test_zombie)
 
 
+class Skeleton:
+    def __init__(self, name):
+        self.name = name
+        self.maxhp = 15
+        self.hp = self.maxhp
+        self.strength = 3
+        self.agility = 3
+
+
+test_skeleton = Skeleton('test_skeleton')
+print(test_skeleton)
+
+
+# Decides the enemy
 def enemy_decider():
-    enemy = None
     num = randint(1, 2)
     if num == 1:
         enemy = test_skeleton
     elif num == 2:
         enemy = test_zombie
     print('A {} suddenly appears!'.format(enemy.name))
-    fight()
+
+
+# Turn based fighting
+def Player_Attack(player, enemy):
+    damage = player.strength + randint(-2, 2)
+    enemy.hp -= damage
+    print('You attack the {} for {} damage.'.format(enemy.name, damage))
+
+
+def enemy_attack(player, enemy):
+    damage = enemy.strength + randint(-2, 2)
+    player.hp -= damage
+    print('The {} hit you for {} damage!'.format(enemy.name, damage))
+
+
+def attack(player, enemy):
+    # Your attack
+    damage = player.strength + randint(-2, 2)
+    enemy.hp -= damage
+    print('You attack the {} for {} damage.'.format(enemy.name, damage))
+    # their attack
+    damage = enemy.strength + randint(-2, 2)
+    player.hp -= damage
+    print('The {} hit you for {} damage!'.format(enemy.name, damage))
 
 
 def fight():
-    while enemy.hp > 0 | p1.hp > o:
+
+    global player
+    global enemy
+    enemy_decider()
+
+
+    while player.hp > 0 | enemy.hp > 0:
         print('1) Attack')
         print('2) Run')
-        option = input('')
+        option = input('>>> ')
+        if option == '1':
+            attack(player, enemy)
+            print('')
+            if player.hp > 0:
+                print('Your hp: {}/{}'.format(player.hp, player.maxhp))
+            elif player.hp <= 0:
+                print('Oh dear, you died.')
+            if enemy.hp > 0:
+                print('{} hp: {}/{}'.format(enemy.name, enemy.hp, enemy.maxhp))
+            elif enemy.hp <= 0:
+                print('You killed the {}!'.format(enemy.name))
 
-    if option == '1':
-        attack()
-    if option == '2':
-        run()
+        if option == '2':
+            pass
 
 
 def attack(p1):
