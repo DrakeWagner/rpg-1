@@ -25,9 +25,10 @@ def main_menu():
 
 
 class Player_Class:
-    def __init__(self, myclass=None, hp=0, strength=0, agility=0, gold=0):
+    def __init__(self, myclass=None, hp=0, maxhp=30, strength=0, agility=0, gold=0):
         self.myclass = myclass
         self.hp = hp
+        self.maxhp = maxhp
         self.strength = strength
         self.agility = agility
         self.gold = gold
@@ -60,20 +61,23 @@ class Player_Class:
             self.agility = 2
 
 
+# Assigns the chosen class to p1
+p1 = Player_Class()
+
+
+# Starts the game loop
 def start():
-    player = Player_Class()
-    player.pick_class()
-    print(player)
-    menu(player)
+    p1.pick_class()
+    print(p1)
+    menu(p1)
 
 
 # Main loop of the game
-def menu(p1):
-    global Player_Class
+def menu(your_player):
 
     print('================')
-    print('Gold: %i' % (p1.gold))
-    print('HP: %i' % (p1.hp))
+    print('Gold: %i' % your_player.gold)
+    print('HP: %i' % your_player.hp)
     print(' ')
     print('1) Fight')
     print('2) Store')
@@ -81,115 +85,93 @@ def menu(p1):
     print('4) Main Menu')
     option = int(input('>> '))
     if option == 1:
-        enemy_decider()
         fight()
     elif option == 2:
         store()
     elif option == 3:
         print(p1.__dict__)
+        menu(p1)
     elif option == 4:
         main_menu()
 
 
 # Classes
 class Zombie:
-    def __init__(self, name):
+    def __init__(self, name='Zombie'):
         self.name = name
         self.maxhp = 20
         self.hp = self.maxhp
         self.strength = 5
         self.agility = 1
-
-
-test_zombie = Zombie('test_zombie')
-print(test_zombie)
+        self.gold = randint(3, 5)
 
 
 class Skeleton:
-    def __init__(self, name):
+    def __init__(self, name='Skeleton'):
         self.name = name
         self.maxhp = 15
         self.hp = self.maxhp
         self.strength = 3
         self.agility = 3
-
-
-test_skeleton = Skeleton('test_skeleton')
-print(test_skeleton)
+        self.gold = randint(1, 4)
 
 
 # Decides the enemy
 def enemy_decider():
+    global enemy
     num = randint(1, 2)
     if num == 1:
-        enemy = test_skeleton
+        enemy = Skeleton()
     elif num == 2:
-        enemy = test_zombie
+        enemy = Zombie()
     print('A {} suddenly appears!'.format(enemy.name))
-
-
-# Turn based fighting
-def Player_Attack(player, enemy):
-    damage = player.strength + randint(-2, 2)
-    enemy.hp -= damage
-    print('You attack the {} for {} damage.'.format(enemy.name, damage))
-
-
-def enemy_attack(player, enemy):
-    damage = enemy.strength + randint(-2, 2)
-    player.hp -= damage
-    print('The {} hit you for {} damage!'.format(enemy.name, damage))
-
-
-def attack(player, enemy):
-    # Your attack
-    damage = player.strength + randint(-2, 2)
-    enemy.hp -= damage
-    print('You attack the {} for {} damage.'.format(enemy.name, damage))
-    # their attack
-    damage = enemy.strength + randint(-2, 2)
-    player.hp -= damage
-    print('The {} hit you for {} damage!'.format(enemy.name, damage))
 
 
 def fight():
 
-    global player
-    global enemy
     enemy_decider()
+    print(enemy.name)
 
-
-    while player.hp > 0 | enemy.hp > 0:
+    while p1.hp >= 0 | enemy.hp >= 0:
         print('1) Attack')
         print('2) Run')
         option = input('>>> ')
         if option == '1':
-            attack(player, enemy)
+            attack(p1, enemy)
             print('')
-            if player.hp > 0:
-                print('Your hp: {}/{}'.format(player.hp, player.maxhp))
-            elif player.hp <= 0:
-                print('Oh dear, you died.')
-            if enemy.hp > 0:
-                print('{} hp: {}/{}'.format(enemy.name, enemy.hp, enemy.maxhp))
-            elif enemy.hp <= 0:
-                print('You killed the {}!'.format(enemy.name))
-
-        if option == '2':
+        elif option == '2':
             pass
 
+    print('fight() ended')
+    print(p1.__dict__)
+    print(enemy.__dict__)
 
-def attack(p1):
+
+def attack(p1, enemy):
     damage = p1.strength + randint(-2, 2)
-    enemy.hp -= damage
-    print('You attack the {} for {} damage.'.format(enemy.name, damage))
+    if p1.hp > 0:
+        enemy.hp -= damage
+        print('You attack the {} for {} damage.'.format(enemy.name, damage))
     damage = enemy.strength + randint(-2, 2)
-    p1.hp -= damage
-    print('The {} hit you for {} damage!'.format(enemy.name, damage))
+    if enemy.hp > 0:
+        p1.hp -= damage
+        print('The {} hit you for {} damage!'.format(enemy.name, damage))
+
+    # Prints status of player and enemy
+    if p1.hp > 0:
+        print('Your hp: {}/{}'.format(p1.hp, p1.maxhp))
+    elif p1.hp <= 0:
+        print('Oh dear, you died.')
+        main_menu()
+    if enemy.hp > 0:
+        print('{} hp: {}/{}'.format(enemy.name, enemy.hp, enemy.maxhp))
+    elif enemy.hp <= 0:
+        print('You killed the {}!'.format(enemy.name))
+        p1.gold += enemy.gold
+        menu(p1)
 
 
 def store():
     pass
-
 
 main_menu()
