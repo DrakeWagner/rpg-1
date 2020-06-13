@@ -1,4 +1,5 @@
 import sys
+import time
 from random import randint
 
 for i in range(0, 5):
@@ -25,13 +26,17 @@ def main_menu():
 
 
 class Player_Class:
-    def __init__(self, myclass=None, hp=0, maxhp=30, strength=0, agility=0, gold=0):
+    def __init__(self, myclass=None, hp=0, maxhp=0, strength=0, agility=0, gold=0, potions=0, sword=False,
+                 shield=False):
         self.myclass = myclass
         self.hp = hp
         self.maxhp = maxhp
         self.strength = strength
         self.agility = agility
         self.gold = gold
+        self.potions = potions
+        self.sword = sword
+        self.shield = shield
 
     def pick_class(self):
         # Chooses the player's main class
@@ -47,18 +52,28 @@ class Player_Class:
             else:
                 print('Please try again. Enter "warrior", "wizard", or "archer"')
         if self.myclass == 'warrior':
+            self.name = 'warrior'
             self.maxhp = 25
             self.hp = 25
             self.strength = 3
             self.agility = 1
+            self.potions = 0
+            self.sword = False
+            self.shield = False
         if self.myclass == 'archer':
+            self.name = 'archer'
+            self.maxhp = 15
             self.hp = 15
             self.strength = 5
-            self.agility = 3
+            self.agility = 8
+            self.potions = 0
         if self.myclass == 'wizard':
-            self.hp = 10
+            self.name = 'wizard'
+            self.maxhp = 12
+            self.hp = 12
             self.strength = 6
-            self.agility = 2
+            self.agility = 4
+            self.potions = 0
 
 
 # Assigns the chosen class to p1
@@ -68,30 +83,41 @@ p1 = Player_Class()
 # Starts the game loop
 def start():
     p1.pick_class()
-    print(p1)
     menu(p1)
 
 
 # Main loop of the game
 def menu(your_player):
-
+    time.sleep(1)
     print('================')
+    if your_player.gold < 0:
+        your_player.gold = 0
     print('Gold: %i' % your_player.gold)
-    print('HP: %i' % your_player.hp)
+    print('HP: %i/%i' % (your_player.hp, your_player.maxhp))
     print(' ')
     print('1) Fight')
     print('2) Store')
     print('3) Player Info')
-    print('4) Main Menu')
+    print('4) Use Healing Potion')
+    print('5) Main Menu')
     option = int(input('>> '))
     if option == 1:
         fight()
     elif option == 2:
-        store()
+        store(p1)
     elif option == 3:
         print(p1.__dict__)
         menu(p1)
     elif option == 4:
+        if your_player.potions > 0:
+            your_player.potions -= 1
+            your_player.hp += 10
+            if your_player.hp > your_player.maxhp:
+                your_player.hp = your_player.maxhp
+        elif your_player.potions == 0:
+            print('You have no healing potions!')
+        menu(p1)
+    elif option == 5:
         main_menu()
 
 
@@ -103,7 +129,7 @@ class Zombie:
         self.hp = self.maxhp
         self.strength = 5
         self.agility = 1
-        self.gold = randint(3, 5)
+        self.gold = randint(4, 8)
 
 
 class Skeleton:
@@ -128,11 +154,10 @@ def enemy_decider():
 
 
 def fight():
-
     enemy_decider()
     print(enemy.name)
 
-    while p1.hp >= 0 | enemy.hp >= 0:
+    while p1.hp >= 0 or enemy.hp >= 0:
         print('1) Attack')
         print('2) Run')
         option = input('>>> ')
@@ -140,38 +165,116 @@ def fight():
             attack(p1, enemy)
             print('')
         elif option == '2':
-            pass
+            run(p1, enemy)
 
     print('fight() ended')
-    print(p1.__dict__)
-    print(enemy.__dict__)
 
 
 def attack(p1, enemy):
+    # Attack mechanics
+    # Player's turn
     damage = p1.strength + randint(-2, 2)
     if p1.hp > 0:
         enemy.hp -= damage
         print('You attack the {} for {} damage.'.format(enemy.name, damage))
+
+    # Enemy's turn
     damage = enemy.strength + randint(-2, 2)
     if enemy.hp > 0:
-        p1.hp -= damage
-        print('The {} hit you for {} damage!'.format(enemy.name, damage))
+        # Player's dodge chance (bypass enemy attack)
+        hitmiss = 20 - int(p1.agility)
+        DodgeDie = randint(1, hitmiss)
+        print(hitmiss)
+        print(DodgeDie)
+        if 4 > DodgeDie:
+            print('You dodged the attack!')
+        elif 4 <= DodgeDie:
+            # Enemy attack
+            p1.hp -= damage
+            print('The {} hit you for {} damage!'.format(enemy.name, damage))
 
     # Prints status of player and enemy
     if p1.hp > 0:
         print('Your hp: {}/{}'.format(p1.hp, p1.maxhp))
     elif p1.hp <= 0:
         print('Oh dear, you died.')
+        time.sleep(2)
+        print(' \n' * 3)
         main_menu()
     if enemy.hp > 0:
         print('{} hp: {}/{}'.format(enemy.name, enemy.hp, enemy.maxhp))
     elif enemy.hp <= 0:
         print('You killed the {}!'.format(enemy.name))
+        time.sleep(1)
+        print('You found {} gold.'.format(enemy.gold))
         p1.gold += enemy.gold
+        time.sleep(1)
         menu(p1)
 
 
-def store():
-    pass
+def run(x, y):
+    success = randint(1, 2)
+    print("You attempt to flee...")
+    time.sleep(1)
+    if success == 1:
+        print('You successfully fled the battle!')
+        print('In your hurry to get away, you dropped some gold!')
+        x.gold -= 2
+        menu(p1)
+    if success == 2:
+        print('You failed to flee...')
+        time.sleep(1)
+        attack(x, y)
+
+
+def store(player):
+    print('/////////////////||                      \n',
+          '||Ye Olde Shoppe||                          \n',
+          '|||||||[]|||||||||')
+    print('A shopkeeper is standing at the counter, eating some mashed potatoes.')
+    time.sleep(1)
+    print("You're a %s! I have just the goods you need." % player.name)
+    time.sleep(1)
+
+    # Want to add staff/bow for other classes eventually
+    while player.name == 'warrior' or 'archer' or 'wizard':
+        warrior_items = ['exit', 'sword', 'Sword', 'shield', 'Shield', 'healing potion', 'potion']
+        print('[ Sword: 15 gold ]\n'
+              '[ Shield: 15 gold ]\n'
+              '[ Healing Potion: 5 gold ]')
+        print(' ')
+        print("Enter an item name, or type 'exit' to return to the menu")
+        storeinput = input('>>> ')
+        storeinput = storeinput.lower()
+        if storeinput in warrior_items:
+            if storeinput == 'exit':
+                menu(p1)
+            elif storeinput == 'sword':
+                if player.gold >= 15 and player.shield == False:
+                    print('You purchase the sword. You feel your strength go up by 3')
+                    player.gold -= 15
+                    player.strength += 3
+                    player.shield = True
+                elif player.gold < 15:
+                    print("You can't afford this!")
+            elif storeinput == 'shield':
+                if player.gold >= 15 and player.shield == False:
+                    print('You purchase the shield. You feel your agility go up by 3')
+                    player.gold -= 15
+                    player.agility += 3
+                    player.shield = True
+                elif player.gold < 15:
+                    print("You can't afford this!")
+            elif storeinput == 'healing potion' or 'potion':
+                if player.gold >= 5:
+                    print('You purchase the potion! It looks like it can restore 10 hitpoints.')
+                    player.potions += 1
+                elif player.gold < 5:
+                    print("You can't afford this!")
+        elif storeinput not in warrior_items:
+            print("Did you mean something else?")
+
+    menu(p1)
+
 
 main_menu()
