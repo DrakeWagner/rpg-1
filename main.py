@@ -67,14 +67,17 @@ class Player_Class:
             self.strength = 5
             self.agility = 8
             self.potions = 0
+            self.sword = False
+            self.shield = False
         if self.myclass == 'wizard':
             self.name = 'wizard'
             self.maxhp = 12
             self.hp = 12
             self.strength = 6
             self.agility = 4
-            self.potions = 0
-
+            self.potions = 1
+            self.sword = False
+            self.shield = False
 
 # Assigns the chosen class to p1
 p1 = Player_Class()
@@ -94,6 +97,7 @@ def menu(your_player):
         your_player.gold = 0
     print('Gold: %i' % your_player.gold)
     print('HP: %i/%i' % (your_player.hp, your_player.maxhp))
+    print('Potions: %i' % your_player.potions)
     print(' ')
     print('1) Fight')
     print('2) Store')
@@ -109,9 +113,11 @@ def menu(your_player):
         print(p1.__dict__)
         menu(p1)
     elif option == 4:
+        # Healing potion mechanics
         if your_player.potions > 0:
             your_player.potions -= 1
             your_player.hp += 10
+            print('You gulp down the crimson colored liquid. You feel your hp go up by 10.')
             if your_player.hp > your_player.maxhp:
                 your_player.hp = your_player.maxhp
         elif your_player.potions == 0:
@@ -184,8 +190,6 @@ def attack(p1, enemy):
         # Player's dodge chance (bypass enemy attack)
         hitmiss = 20 - int(p1.agility)
         DodgeDie = randint(1, hitmiss)
-        print(hitmiss)
-        print(DodgeDie)
         if 4 > DodgeDie:
             print('You dodged the attack!')
         elif 4 <= DodgeDie:
@@ -198,6 +202,7 @@ def attack(p1, enemy):
         print('Your hp: {}/{}'.format(p1.hp, p1.maxhp))
     elif p1.hp <= 0:
         print('Oh dear, you died.')
+        # print('Score: {}'.format(score)
         time.sleep(2)
         print(' \n' * 3)
         main_menu()
