@@ -1,5 +1,6 @@
 import sys
 import time
+import random
 from random import randint
 
 for i in range(0, 5):
@@ -52,7 +53,7 @@ class Player_Class:
             else:
                 print('Please try again. Enter "warrior", "wizard", or "archer"')
         if self.myclass == 'warrior':
-            self.name = 'warrior'
+            self.myclass = 'warrior'
             self.maxhp = 25
             self.hp = 25
             self.strength = 3
@@ -61,7 +62,7 @@ class Player_Class:
             self.sword = False
             self.shield = False
         if self.myclass == 'archer':
-            self.name = 'archer'
+            self.myclass = 'archer'
             self.maxhp = 15
             self.hp = 15
             self.strength = 5
@@ -70,7 +71,7 @@ class Player_Class:
             self.sword = False
             self.shield = False
         if self.myclass == 'wizard':
-            self.name = 'wizard'
+            self.myclass = 'wizard'
             self.maxhp = 12
             self.hp = 12
             self.strength = 6
@@ -91,8 +92,15 @@ def start():
 
 # Main loop of the game
 def menu(your_player):
-    time.sleep(1)
+    time.sleep(.5)
     print('================')
+
+    if p1.hp <= 0:
+        print('Oh dear, you died.')
+        time.sleep(2)
+        print(' \n' * 3)
+        main_menu()
+
     if your_player.gold < 0:
         your_player.gold = 0
     print('Gold: %i' % your_player.gold)
@@ -103,34 +111,40 @@ def menu(your_player):
     print('2) Store')
     print('3) Player Info')
     print('4) Use Healing Potion')
-    print('5) Main Menu')
+    print('5) Explore')
     option = int(input('>> '))
     if option == 1:
         fight()
     elif option == 2:
         store(p1)
     elif option == 3:
-        print(p1.__dict__)
+        print('[[[Player Stats]]]')
+        for key, value in p1.__dict__.items():
+            print(key, ': ', value, sep='')
         menu(p1)
     elif option == 4:
-        # Healing potion mechanics
-        if your_player.potions > 0:
-            your_player.potions -= 1
-            your_player.hp += 10
-            print('You gulp down the crimson colored liquid. You feel your hp go up by 10.')
-            if your_player.hp > your_player.maxhp:
-                your_player.hp = your_player.maxhp
-        elif your_player.potions == 0:
-            print('You have no healing potions!')
+        use_potion(p1)
         menu(p1)
     elif option == 5:
-        main_menu()
+        pass
+        # explore()
+
+# Healing potion mechanics
+def use_potion(your_player):
+    if your_player.potions > 0:
+        your_player.potions -= 1
+        your_player.hp += 10
+        print('You gulp down the crimson colored liquid. You feel your hp go up by {}.'.format(10))
+        if your_player.hp > your_player.maxhp:
+            your_player.hp = your_player.maxhp
+    elif your_player.potions == 0:
+        print('You have no healing potions!')
 
 
 # Classes
 class Zombie:
     def __init__(self, name='Zombie'):
-        self.name = name
+        self.myclass = name
         self.maxhp = 20
         self.hp = self.maxhp
         self.strength = 5
@@ -140,7 +154,7 @@ class Zombie:
 
 class Skeleton:
     def __init__(self, name='Skeleton'):
-        self.name = name
+        self.myclass = name
         self.maxhp = 15
         self.hp = self.maxhp
         self.strength = 3
@@ -156,35 +170,44 @@ def enemy_decider():
         enemy = Skeleton()
     elif num == 2:
         enemy = Zombie()
-    print('A {} suddenly appears!'.format(enemy.name))
+    print('A {} suddenly appears!'.format(enemy.myclass))
 
 
 def fight():
     enemy_decider()
-    print(enemy.name)
+    print(enemy.myclass)
 
     while p1.hp >= 0 or enemy.hp >= 0:
         print('1) Attack')
         print('2) Run')
+        print('3) Use Potion')
         option = input('>>> ')
         if option == '1':
             attack(p1, enemy)
             print('')
         elif option == '2':
             run(p1, enemy)
+        elif option == '3':
+            # Uses potion as your turn in battle, then defend
+            if p1.potions > 0:
+                use_potion(p1)
+                enemy_attack(p1, enemy)
+            elif p1.potions <= 0:
+                print('You have no healing potions!')
+
+
 
     print('fight() ended')
 
-
-def attack(p1, enemy):
-    # Attack mechanics
+def player_attack(p1, enemy):
     # Player's turn
     damage = p1.strength + randint(-2, 2)
     if p1.hp > 0:
         enemy.hp -= damage
-        print('You attack the {} for {} damage.'.format(enemy.name, damage))
+        print('You attack the {} for {} damage.'.format(enemy.myclass, damage))
 
-    # Enemy's turn
+# Enemy's turn
+def enemy_attack(p1, enemy):
     damage = enemy.strength + randint(-2, 2)
     if enemy.hp > 0:
         # Player's dodge chance (bypass enemy attack)
@@ -195,7 +218,17 @@ def attack(p1, enemy):
         elif 4 <= DodgeDie:
             # Enemy attack
             p1.hp -= damage
-            print('The {} hit you for {} damage!'.format(enemy.name, damage))
+            print('The {} hit you for {} damage!'.format(enemy.myclass, damage))
+
+
+
+
+def attack(p1, enemy):
+    # Attack mechanics
+    player_attack(p1, enemy)
+
+    # Enemy's turn
+    enemy_attack(p1, enemy)
 
     # Prints status of player and enemy
     if p1.hp > 0:
@@ -207,9 +240,9 @@ def attack(p1, enemy):
         print(' \n' * 3)
         main_menu()
     if enemy.hp > 0:
-        print('{} hp: {}/{}'.format(enemy.name, enemy.hp, enemy.maxhp))
+        print('{} hp: {}/{}'.format(enemy.myclass, enemy.hp, enemy.maxhp))
     elif enemy.hp <= 0:
-        print('You killed the {}!'.format(enemy.name))
+        print('You killed the {}!'.format(enemy.myclass))
         time.sleep(1)
         print('You found {} gold.'.format(enemy.gold))
         p1.gold += enemy.gold
@@ -229,20 +262,30 @@ def run(x, y):
     if success == 2:
         print('You failed to flee...')
         time.sleep(1)
-        attack(x, y)
+        enemy_attack(x, y)
 
+
+def shop_intro_line():
+    line1 = 'A shopkeeper is standing at the counter, eating some mashed potatoes.'
+    line2 = 'An odd looking man welcomes you into his shop'
+    line3 = 'You startle the shopkeeper as you enter, causing him scream.'
+    line4 = 'A talking cat sits on the counter, flicking its tail.'
+    line5 = 'A shopkeeper is standing at the counter, eating some mashed potatoes.'
+    lines = [line1, line2, line3, line4, line5]
+    random_shop_intro_line = random.choice(lines)
+    print(random_shop_intro_line)
 
 def store(player):
     print('/////////////////||                      \n',
           '||Ye Olde Shoppe||                          \n',
           '|||||||[]|||||||||')
-    print('A shopkeeper is standing at the counter, eating some mashed potatoes.')
+    shop_intro_line()
     time.sleep(1)
-    print("You're a %s! I have just the goods you need." % player.name)
+    print("You're a %s! I have just the goods you need." % player.myclass)
     time.sleep(1)
 
     # Want to add staff/bow for other classes eventually
-    while player.name == 'warrior' or 'archer' or 'wizard':
+    while player.myclass == 'warrior' or 'archer' or 'wizard':
         warrior_items = ['exit', 'sword', 'Sword', 'shield', 'Shield', 'healing potion', 'potion']
         print('[ Sword: 15 gold ]\n'
               '[ Shield: 15 gold ]\n'
@@ -278,8 +321,11 @@ def store(player):
                     print("You can't afford this!")
         elif storeinput not in warrior_items:
             print("Did you mean something else?")
-
     menu(p1)
+
+
+def explore(p1):
+    pass
 
 
 main_menu()
