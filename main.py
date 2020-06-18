@@ -317,8 +317,9 @@ def store(player):
                 if player.gold >= 5:
                     print('You purchase the potion! It looks like it can restore 10 hitpoints.')
                     player.potions += 1
+                    player.gold -= 5
                 elif player.gold < 5:
-                    print("You can't afford this!")
+                    print("You can't afford this, idiot!")
         elif storeinput not in warrior_items:
             print("Did you mean something else?")
     menu(p1)
